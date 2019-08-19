@@ -28,6 +28,9 @@ class ViewController: UIViewController, ARSCNViewDelegate {
         
         // Set the scene to the view
         sceneView.scene = scene
+        //Sets an omni-directional light source within the sceneview in order to view our reflective node material
+        //An omni-directional light source is just a light source that spreads across the whole scene
+        sceneView.autoenablesDefaultLighting = true
     }
     
     override func viewWillAppear(_ animated: Bool) {
@@ -76,30 +79,49 @@ class ViewController: UIViewController, ARSCNViewDelegate {
     }
     
     @IBAction func add(_ sender: Any) {
+        //Initializes node object
+        //The node is simply a position in space, it has no shape, no size, and no color
         let node = SCNNode()
-        /*  The Node is simply a position in space, it has no shape, no size, and no color */
-        node.geometry = SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0)
+        //Sets dimensions for node object
+        node.geometry = SCNBox(width: 0.1, height: 0.1, length: 0.1, chamferRadius: 0.03)
+        //Sets reflective material of surface
         node.geometry?.firstMaterial?.specular.contents = UIColor.white
+        //Sets object color
         node.geometry?.firstMaterial?.diffuse.contents = UIColor.blue
-        node.position = SCNVector3(0,0,-1)
+        //Sets x coordinate to be in between -0.3 to 0.3 units of the world origin
+        let x = randomNumbers(firstNum: -0.3, secondNum: 0.3)
+        //Sets y coordinate to be in between -0.3 to 0.3 units of the world origin
+        let y = randomNumbers(firstNum: -0.3, secondNum: 0.3)
+        //Sets z coordinate to be in between -0.3 to 0.3 units of the world origin
+        let z = randomNumbers(firstNum: -0.3, secondNum: 0.3)
+        //Sets initial position being behind the origin by -1
+        //Sets static position of node object
+        //The problem with static positioning is that whenever you add another node object they will be placed on top of one another
+        //node.position = SCNVector3(0,0,-1)
+        node.position = SCNVector3(x,y,z)
+        //Displays the node within the sceneView
         sceneView.scene.rootNode.addChildNode(node)
     }
     
     @IBAction func reset(_ sender: Any) {
+        //Calls the restarts session function
         restartSession()
     }
     
     func restartSession() {
+        //Here we are going to pause the scene view session so it stops keeping track of your position or orientation
         sceneView.session.pause()
-        /*  Here we are going to pause the scene view session so it stops keeping track of your position or orientation
-        */
+        //We then remove the node from the sceneView
         sceneView.scene.rootNode.enumerateChildNodes{node,_ in node.removeFromParentNode()
             }
-            /*
-                This removes the node objectl,
-         */
+        //Then we are re-running the sceneView
         sceneView.session.run(ARWorldTrackingConfiguration(), options: [.resetTracking, .removeExistingAnchors])
  
+    }
+    
+    //This function sets a random numbers that is in between firstNum and secondNum
+    func randomNumbers(firstNum: CGFloat, secondNum: CGFloat) -> CGFloat {
+        return CGFloat(arc4random()) / CGFloat(UINT32_MAX) * abs(firstNum - secondNum) + min(firstNum, secondNum)
     }
     
     
